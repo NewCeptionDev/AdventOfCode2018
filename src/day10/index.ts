@@ -45,7 +45,7 @@ const printPositions = (positions: Position[]) => {
   const pointMap: Map<number, Map<number, boolean>> = new Map<number, Map<number, boolean>>()
 
   for(let point of positions) {
-    if(!pointMap.has(point.y)) {
+    if(!pointMap[point.y]) {
       pointMap[point.y] = new Map<number, boolean>();
     }
     pointMap[point.y][point.x] = true;
@@ -76,15 +76,13 @@ const printPositions = (positions: Position[]) => {
     }
   }
 
-  console.log(smallestY, largestY, smallestX, largestX)
-
   for(let y = smallestY; y <= largestY; y++) {
     let line = "";
     for(let x = smallestX; x <= largestX; x++) {
       if(pointMap[y] && pointMap[y][x]) {
         line += "#"
       } else {
-        line += "."
+        line += " "
       }
     }
     console.log(line)
@@ -105,9 +103,9 @@ const goA = (input) => {
     const positions = points.map(point => calculatePositionAtTick(point, tick));
     const yDistanceToFirst = positions.map(position => Math.abs(positions[0].y - position.y))
 
-    if(yDistanceToFirst.every(distance => distance < 10)) {
-      console.log("TICK", tick)
+    if(yDistanceToFirst.every(distance => distance < 8)) {
       printPositions(positions)
+      console.log("")
       closeTogether = true;
     } else {
       if(closeTogether) {
@@ -120,7 +118,29 @@ const goA = (input) => {
 }
 
 const goB = (input) => {
-  return
+  const lines = splitToLines(input)
+  const points = lines.map(line => parsePoint(line))
+
+  let closeTogether = false;
+  let wasCloseTogether = false;
+  let tick = 0;
+
+  while(!wasCloseTogether) {
+    tick++;
+
+    const positions = points.map(point => calculatePositionAtTick(point, tick));
+    const yDistanceToFirst = positions.map(position => Math.abs(positions[0].y - position.y))
+
+    if(yDistanceToFirst.every(distance => distance < 8)) {
+      closeTogether = true;
+    } else {
+      if(closeTogether) {
+        wasCloseTogether = true
+      }
+    }
+  }
+
+  return tick - 1
 }
 
 /* Tests */
@@ -139,13 +159,14 @@ test(calculatePositionAtTick({
   y: 3
 })
 test(goA(readTestFile()))
+test(goB(readTestFile()), 3)
 
 /* Results */
 
 console.time("Time")
-//const resultA = goA(input)
+const resultA = goA(input)
 const resultB = goB(input)
 console.timeEnd("Time")
 
-//console.log("Solution to part 1:", resultA)
+console.log("Solution to part 1:", resultA)
 console.log("Solution to part 2:", resultB)
